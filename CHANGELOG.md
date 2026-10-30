@@ -1,5 +1,11 @@
 # Changelog
 
+## 1.1.0 (2026-10-30) — self-update check
+
+- Agent-native update mechanism: at most once per day, the skill has the agent compare
+  the installed `version` against the repo's `VERSION` on GitHub and tell the user the
+  one-line update command when a newer release exists. Never blocks generation.
+
 ## 1.0.0 (2026-10-30) — first public release
 
 - Outline text → editable mind map, three artifacts per run: static `.svg`

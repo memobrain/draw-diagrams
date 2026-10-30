@@ -48,6 +48,20 @@ git clone https://github.com/memobrain/draw-diagrams ~/.agents/skills/draw-diagr
 
 Requires Python 3.8+. No pip dependencies.
 
+## Update
+
+Re-run the one-liner — it installs the latest version in place:
+
+```bash
+npx skills add memobrain/draw-diagrams
+```
+
+Git-cloned installs update with `git -C ~/.agents/skills/draw-diagrams pull`; zip
+installs just re-download and overwrite. The skill also **self-checks**: at most once
+a day it compares its installed `version` against the repo's `VERSION` and tells the
+user when an update is available — so installed users hear about new versions from
+their agent the next time they draw.
+
 ## Try it
 
 ```bash
