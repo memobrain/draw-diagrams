@@ -1,6 +1,6 @@
 ---
 name: draw-diagrams
-version: 1.1.0
+version: 1.1.1
 description: >-
   Turn any text, plan, or outline into a real, editable mind map — 25 layouts
   (right/tree/fishbone/timeline/matrix/brace…) and 9 color themes. Produces a

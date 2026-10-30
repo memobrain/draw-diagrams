@@ -1,5 +1,7 @@
 # draw-diagrams — an agent skill for mind maps
 
+![demo](demo.gif)
+
 A [Agent Skills](https://www.anthropic.com/research/equipping-agents-for-the-real-world-with-agent-skills)
 package (SKILL.md + one zero-dependency Python script) that teaches any
 SKILL.md-compatible coding agent (Claude Code, Codex, Gemini CLI, Cursor,

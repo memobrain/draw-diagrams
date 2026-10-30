@@ -1,5 +1,10 @@
 # Changelog
 
+## 1.1.1 (2026-10-30) — demo GIF
+
+- Animated demo on the repo homepage: install → prompt → generated maps (two themes)
+  → open-online editing. Docs only; skill behavior unchanged from 1.1.0.
+
 ## 1.1.0 (2026-10-30) — self-update check
 
 - Agent-native update mechanism: at most once per day, the skill has the agent compare
