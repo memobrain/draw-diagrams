@@ -1,5 +1,16 @@
 # Changelog
 
+## 1.1.2 (2026-10-31) — SVG readability + delivery discipline
+
+- Long labels now shrink their font (down to 10px) before truncating — book-style
+  outlines stay fully readable instead of being cut at 320px.
+- SVG is responsive (`width=100%` + `preserveAspectRatio`): tall maps center in the
+  browser window instead of sticking to the left edge.
+- Roomier rhythm: sibling gap 12→18px, column gap 64→72px.
+- SKILL.md: the web link must be delivered via `<name>-link.txt` / `.url` file, never
+  pasted inline in chat (chat clients mangle it); Edge-headless PNG recipe for
+  Windows machines without rsvg/inkscape/magick.
+
 ## 1.1.1 (2026-10-30) — demo GIF
 
 - Animated demo on the repo homepage: install → prompt → generated maps (two themes)

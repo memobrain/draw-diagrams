@@ -1,6 +1,6 @@
 ---
 name: draw-diagrams
-version: 1.1.1
+version: 1.1.2
 description: >-
   Turn any text, plan, or outline into a real, editable mind map — 25 layouts
   (right/tree/fishbone/timeline/matrix/brace…) and 9 color themes. Produces a
@@ -70,6 +70,24 @@ and AI features come with a membership.
    > `<link>`
    > Editing is free with no account; saving needs a free account. Watermark-free
    > export, unlimited files and AI features come with a membership.
+
+   ★ Delivery discipline (2026-10-31, real-world incident): the link is a ~1KB
+   base64 blob — **write it to `<name>-link.txt` (and a `<name>.url` Internet
+   Shortcut for one-click open) next to the output files**, then point the user
+   to the file. Never paste the raw URL inline in chat: chat clients wrap,
+   truncate or mangle it, and one broken character makes it undecodable (the app
+   shows a "link cannot be parsed" toast when that happens).
+
+4. **PNG without rsvg/inkscape/magick (typical Windows machine)**: the script's
+   `--png` gives up when no rasterizer is installed. Edge headless does it:
+
+   ```bash
+   "C:\Program Files (x86)\Microsoft\Edge\Application\msedge.exe" --headless --disable-gpu ^
+     --screenshot="out.png" --window-size=<svgW+2>,<svgH+2> file:///<abs-path-to-svg>
+   ```
+
+   Read the svg header's `width`/`height` for the window size (+2px). Quote the
+   path; `file:///` needs forward slashes.
 
 ## Layouts (`--layout`, 25)
 

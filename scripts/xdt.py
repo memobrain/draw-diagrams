@@ -36,9 +36,10 @@ from pathlib import Path
 
 APP_URL = "https://app.memobrain.net/"
 NODE_H = 34          # node height (svg)
-VGAP = 12            # vertical gap between sibling slots
-HGAP = 64            # horizontal gap between depth columns
-MAX_TEXT_W = 320.0   # svg label max width before truncation
+VGAP = 18            # vertical gap between sibling slots（10-31 书籍大纲反馈：12px 中文长标签显拥挤）
+HGAP = 72            # horizontal gap between depth columns（同上：64→72 留呼吸感）
+MAX_TEXT_W = 360.0   # svg label max width before font-shrink-then-truncate
+MIN_FS = 10.0        # 自适应字号下限——先缩字号保完整显示，缩无可缩才截断
 # ★ 布局/主题清单与应用正册同源（src/core/ai/tools/setLayoutDirection.VALID_LAYOUT_DIRS
 #   与 mindmapTheme 注册表）——改应用侧清单必须同步这里
 LAYOUTS = ["right", "left", "side", "four-side", "tb", "bt", "h-timeline", "v-timeline",
@@ -173,6 +174,29 @@ def clip_text(s: str, max_w: float = MAX_TEXT_W) -> str:
     return "".join(out)
 
 
+def text_px(s: str, fs: float) -> float:
+    """指定字号下的显示宽度（全角=1em、半角≈0.556em）。"""
+    return sum(fs if ord(c) >= 0x2E80 else fs * 0.556 for c in s)
+
+
+def fit_label(s: str, base_fs: float):
+    """★ 2026-10-31 书籍大纲反馈根治：长标签先自适应缩字号（base→MIN_FS）保完整
+    显示，缩无可缩才截断——旧版 320px 直接截断=「显示不全」。返回 (字号, 文本)。"""
+    fs = base_fs
+    while fs > MIN_FS:
+        if text_px(s, fs) <= MAX_TEXT_W:
+            return fs, s
+        fs -= 0.5
+    acc, out = 0.0, []
+    for c in s:
+        w = MIN_FS if ord(c) >= 0x2E80 else MIN_FS * 0.556
+        if acc + w > MAX_TEXT_W - MIN_FS:
+            return MIN_FS, "".join(out) + "…"
+        acc += w
+        out.append(c)
+    return MIN_FS, "".join(out)
+
+
 def _nid(prefix: str) -> str:
     return f"{prefix}_{uuid.uuid4().hex[:12]}"
 
@@ -261,9 +285,10 @@ def _layout(root, fs_of=None):
     widths, cols = {}, {}
 
     def measure(node, depth):
-        label = clip_text(node["label"])
-        fs = fs_of(depth) if fs_of else 13.5
-        w = max(48, int(text_w(label) * fs / 13.5) + 28)
+        fs_base = fs_of(depth) if fs_of else 13.5
+        fs, label = fit_label(node["label"], fs_base)
+        node["_fs"], node["_label"] = fs, label
+        w = max(48, int(text_px(label, fs)) + 28)
         widths[id(node)] = w
         cols.setdefault(depth, 0)
         cols[depth] = max(cols[depth], w)
@@ -325,9 +350,11 @@ def tree_to_svg(root, theme: str = "default") -> str:
         mark(root, None)
 
     parts = []
+    # ★ 响应式居中（10-31 反馈「只在左侧不居中」）：width=100%+viewBox+meet=横向
+    #   随容器居中、纵向原比例顶对齐；固定像素宽在宽窗口里顶左锚定=高瘦图贴左墙
     parts.append(
-        f'<svg xmlns="http://www.w3.org/2000/svg" width="{int(total_w + 80)}" height="{int(total_h + 80)}" '
-        f'viewBox="0 0 {int(total_w + 80)} {int(total_h + 80)}">'
+        f'<svg xmlns="http://www.w3.org/2000/svg" width="100%" height="{int(total_h + 80)}" '
+        f'viewBox="0 0 {int(total_w + 80)} {int(total_h + 80)}" preserveAspectRatio="xMidYMin meet">'
     )
     parts.append(f'<rect width="100%" height="100%" fill="{th["canvasBg"] if th else "#ffffff"}"/>')
     parts.append('<g font-family="Segoe UI, Arial, sans-serif" transform="translate(40,40)">')
@@ -361,26 +388,26 @@ def tree_to_svg(root, theme: str = "default") -> str:
                        f'{x2:.0f} {y2:.0f}"')
                 tail = "/>"
             parts.append(f'{seg} fill="none" stroke="{stroke}" stroke-width="{sw}" opacity="{opacity}"{tail}')
-        label = clip_text(node["label"])
+        label, fs = node["_label"], node["_fs"]
         w, x, y = widths[id(node)], node["_x"], node["_y"]
         if th:
             b = node["_br"]
             if depth == 0:
                 bg, fg, border = th["root"]["bg"], th["root"]["fg"], th["root"]["bg"]
-                fs, fw = 15, "700"
+                fw = "700"
             elif depth == 1:
                 bg, fg, border = b["bg"], th["childFg"], b["border"]
-                fs, fw = 14, "700"
+                fw = "700"
             else:
                 bg, fg, border = th["childBg"], th["childFg"], b["border"]
-                fs, fw = 12.5, "500"
+                fw = "500"
         else:
             bg = "#FDA503" if depth == 0 else _mix(color, 0.72)
             fg = "#ffffff" if depth == 0 else "#1f2937"
-            fs, fw = (15, "700") if depth == 0 else (13.5, "500")
+            fw = "700" if depth == 0 else "500"
             border = color if depth > 0 else ROOT_BG
         parts.append(f'<rect x="{x:.0f}" y="{y:.0f}" width="{w:.0f}" height="{NODE_H}" rx="9" fill="{bg}" stroke="{border}" stroke-width="{1.6 if depth == 0 else 1.1}"/>')
-        parts.append(f'<text x="{x + w / 2:.0f}" y="{y + NODE_H / 2 + 4.5:.0f}" text-anchor="middle" font-size="{fs}" font-weight="{fw}" fill="{fg}">{esc(label)}</text>')
+        parts.append(f'<text x="{x + w / 2:.0f}" y="{y + NODE_H / 2 + fs * 0.34:.1f}" text-anchor="middle" font-size="{fs}" font-weight="{fw}" fill="{fg}">{esc(label)}</text>')
 
     draw(root, 0, ROOT_BG)
     parts.append("</g></svg>")
