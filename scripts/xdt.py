@@ -439,7 +439,34 @@ def try_png(svg_path: Path) -> bool:
         cairosvg.svg2png(url=str(svg_path), write_to=str(out), output_width=1600)
         return out.exists()
     except Exception:
-        return False
+        pass
+    # ★ 2026-10-31：Windows 常态无 unix 栅格化工具（DS Harness 实战反馈「--png 没
+    #   生成」）——Edge/Chrome headless 兜底，开箱即得，不再依赖 agent 照食谱手动跑。
+    #   窗口尺寸取 svg viewBox（svg 本体是 width=100% 响应式，头里 width 不可用）。
+    try:
+        vb = re.search(r'viewBox="0 0 (\d+) (\d+)"', svg_path.read_text(encoding="utf-8")[:400])
+        w, h = (int(vb.group(1)), int(vb.group(2))) if vb else (1200, 800)
+    except Exception:
+        w, h = 1200, 800
+    for exe in (
+        r"C:\Program Files (x86)\Microsoft\Edge\Application\msedge.exe",
+        r"C:\Program Files\Microsoft\Edge\Application\msedge.exe",
+        r"C:\Program Files\Google\Chrome\Application\chrome.exe",
+        r"C:\Program Files (x86)\Google\Chrome\Application\chrome.exe",
+    ):
+        if not Path(exe).exists():
+            continue
+        try:
+            subprocess.run(
+                [exe, "--headless", "--disable-gpu", f"--screenshot={out}",
+                 f"--window-size={w + 2},{h + 2}", "--default-background-color=FFFFFFFF",
+                 svg_path.resolve().as_uri()],
+                capture_output=True, timeout=180)
+            if out.exists() and out.stat().st_size > 0:
+                return True
+        except Exception:
+            continue
+    return False
 
 
 def main(argv=None) -> int:
@@ -449,7 +476,8 @@ def main(argv=None) -> int:
     ap.add_argument("--name", help="diagram name (default: root label)")
     ap.add_argument("--layout", default="right", choices=LAYOUTS, help="mind map layout for the app (25 options, default: right)")
     ap.add_argument("--theme", default="default", choices=THEMES, help="color theme baked into the link payload, the .xdt (colorizeForTheme 口径) and the .svg preview (9 options, default: default)")
-    ap.add_argument("--link", action="store_true", help="print a one-click web edit link")
+    ap.add_argument("--link", action="store_true", help="additionally print the one-click web edit link to stdout")
+    ap.add_argument("--no-link", action="store_true", help="skip writing the -link.txt/.url files")
     ap.add_argument("--png", action="store_true", help="best-effort PNG rasterization")
     ap.add_argument("--open", action="store_true", help="open the edit link in the browser")
     args = ap.parse_args(argv)
@@ -474,9 +502,16 @@ def main(argv=None) -> int:
 
     if args.png:
         ok = try_png(svg_path)
-        print(f"png {'written' if ok else 'skipped (no rsvg-convert/inkscape/magick/cairosvg found)'}")
+        print(f"png {'written' if ok else 'skipped (no rasterizer found)'}")
 
     link = make_link(root, name, args.layout, args.theme)
+    # ★ 2026-10-31：链接必落文件（交付纪律）——聊天内联 ~1KB base64 必被换行/截断弄坏
+    #   （DS Harness 实战复现「在线编辑没生效」）。.txt=复制用 / .url=双击直开。
+    #   --no-link 可关；--link 额外把 URL 打到 stdout。
+    if not args.no_link:
+        (outdir / f"{slug}-link.txt").write_text(link + "\n", encoding="utf-8")
+        (outdir / f"{slug}.url").write_text("[InternetShortcut]\nURL=" + link + "\n", encoding="utf-8")
+        print(f"wrote {outdir / f'{slug}-link.txt'} + .url (one-click web edit link — hand these files over, never paste the URL inline in chat)")
     if args.link or args.open:
         print(link)
     if args.open:

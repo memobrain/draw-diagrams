@@ -1,5 +1,15 @@
 # Changelog
 
+## 1.2.0 (2026-10-31) — deterministic link delivery + out-of-box PNG
+
+- The web-edit link is now written to `<name>-link.txt` + `<name>.url`
+  automatically on every run (`--no-link` to opt out) — output no longer depends
+  on the agent remembering `--link`; hand the files over, never paste the URL
+  inline in chat.
+- `--png` falls back to Edge/Chrome headless automatically on Windows (unix
+  rasterizers or cairosvg still preferred when present) — PNG works out of the
+  box on stock Windows machines.
+
 ## 1.1.2 (2026-10-31) — SVG readability + delivery discipline
 
 - Long labels now shrink their font (down to 10px) before truncating — book-style
