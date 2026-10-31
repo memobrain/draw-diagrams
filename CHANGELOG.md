@@ -1,5 +1,13 @@
 # Changelog
 
+## 1.2.1 (2026-10-31) — link visibility in agent replies
+
+- The script now prints the `.url` file's ABSOLUTE path with an explicit
+  "MENTION THIS IN YOUR REPLY" directive — agents relay stdout far more reliably
+  than they follow prose rules. SKILL.md handover became a verbatim template
+  with the online-editing path as the first bolded line; a written-but-unmentioned
+  link file counted as a missing link (real-world report #3).
+
 ## 1.2.0 (2026-10-31) — deterministic link delivery + out-of-box PNG
 
 - The web-edit link is now written to `<name>-link.txt` + `<name>.url`

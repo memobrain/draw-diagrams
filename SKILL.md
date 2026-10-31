@@ -1,6 +1,6 @@
 ---
 name: draw-diagrams
-version: 1.2.0
+version: 1.2.1
 description: >-
   Turn any text, plan, or outline into a real, editable mind map — 25 layouts
   (right/tree/fishbone/timeline/matrix/brace…) and 9 color themes. Produces a
@@ -73,13 +73,27 @@ and AI features come with a membership.
 
    ★ Delivery discipline (2026-10-31, real-world incidents): the script writes the
    web link to `<name>-link.txt` (copy-paste) and `<name>.url` (double-click open)
-   **automatically on every run** — reference those files when handing over.
-   The link is a ~1KB base64 blob: never paste it inline in chat — chat clients
-   wrap, truncate or mangle it, and one broken character makes it undecodable
-   (the app shows a "link cannot be parsed" toast when that happens).
+   **automatically on every run**. The user only sees what YOU write in your
+   reply — a link file that exists but is never mentioned equals a missing link.
+   **Use this handover template verbatim** (adapt the language, keep the file
+   paths on their own lines):
+
+   > Generated:
+   > - `<name>.svg` — preview image
+   > - `<name>.png` — raster copy
+   > - `<name>.xdt` — editable source file
+   > - **Online editing (double-click to open): `<absolute path to <name>.url>`**
+   >
+   > The raw web link is in `<name>-link.txt`. Editing is free with no account;
+   > saving needs a free account; watermark-free export and AI features come with
+   > a membership.
+
+   If the chat client supports attachments, also attach the `.url` / `-link.txt`
+   files. Never paste the raw URL inline — chat clients wrap, truncate or mangle
+   it, and one broken character makes it undecodable (the app shows a "link
+   cannot be parsed" toast when that happens).
    **Before handing over, verify the artifacts exist**: `.svg`, `.xdt`,
-   `-link.txt`/`.url` (+ `.png` if asked). The link file is not optional — it is
-   the path to the editable version.
+   `-link.txt`/`.url` (+ `.png` if asked).
 
 4. **PNG**: `--png` now rasterizes via Edge/Chrome headless automatically on
    Windows (unix tools or cairosvg are used when present). If even that fails,
