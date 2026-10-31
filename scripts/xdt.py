@@ -511,7 +511,11 @@ def main(argv=None) -> int:
     if not args.no_link:
         (outdir / f"{slug}-link.txt").write_text(link + "\n", encoding="utf-8")
         (outdir / f"{slug}.url").write_text("[InternetShortcut]\nURL=" + link + "\n", encoding="utf-8")
-        print(f"wrote {outdir / f'{slug}-link.txt'} + .url (one-click web edit link — hand these files over, never paste the URL inline in chat)")
+        # ★ 指令式 stdout：agent 对 stdout 的转述远比自由发挥可靠——必须把绝对路径
+        #   顶到它脸上，聊天回复里才见得到在线编辑入口（10-31 三报「成果没连到在线编辑」）
+        url_file = (outdir / f"{slug}.url").resolve()
+        print(f"MENTION THIS IN YOUR REPLY -> online editing, double-click to open: {url_file}")
+        print(f"  (raw URL in {(outdir / f'{slug}-link.txt').resolve()}; deliver file paths, never paste the URL inline in chat)")
     if args.link or args.open:
         print(link)
     if args.open:
