@@ -1,0 +1,5 @@
+{"skill":"OUTLINE","targetMode":"flow","summary":"E-commerce order fulfilment, from checkout to shipping",
+ "mainline":["Start","Confirm order info","Stock sufficient?","Reserve stock","Create payment","Payment successful?","Arrange shipping","End"],
+ "branches":[{"from":"Stock sufficient?","cond":"No","path":["Notify out of stock"],"join":"Confirm order info"},
+             {"from":"Payment successful?","cond":"No","path":["Cancel order","Release stock"],"join":"End"}],
+ "loops":[{"from":"Create payment","to":"Confirm order info","meaning":"Revise the order and retry payment"}]}
